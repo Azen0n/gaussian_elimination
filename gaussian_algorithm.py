@@ -1,5 +1,4 @@
 import numpy as np
-from data import a, b, a_test, b_test, a_test2, b_test2
 
 
 # Метод Гаусса: прямой ход
@@ -42,13 +41,16 @@ def backward(a, b):
     return x
 
 
-if __name__ == '__main__':
-    print('Исходная матрица коэффициентов:\n', a_test2)
-    print('Исходный столбец свободных членов:\n', b_test2)
-    matrix = forward(a_test2, b_test2)
-    print('\nМатрица коэффициентов после прямого хода:\n', matrix[0])
-    print('Столбец свободных членов:\n', matrix[1])
+# Функция для импорта
+def gaussian(a, b):
+    print('Исходная матрица коэффициентов:\n', a)
+    print('Исходный столбец свободных членов:\n', b)
 
-    answers = backward(matrix[0], matrix[1])
-    print('\nВектор со значениями x:\n', answers)
+    forward_result = forward(a, b)
+    print('\nМатрица коэффициентов после прямого хода:\n', forward_result[0])
+    print('Столбец свободных членов:\n', forward_result[1])
 
+    x = backward(forward_result[0], forward_result[1])
+    print('\nВектор со значениями x:\n', x)
+
+    return x
