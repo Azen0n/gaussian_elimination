@@ -1,5 +1,5 @@
 import numpy as np
-from data import a, b, a_test, b_test
+from data import a, b, a_test, b_test, a_test2, b_test2
 
 
 # Метод Гаусса: прямой ход
@@ -13,6 +13,13 @@ def forward(a, b):
             for j in range(k, n):                   # Вычитаем из всей строки другую, k-й элемент равен нулю
                 a[i][j] = a[i][j] - r * a[k][j]
             b[i] = b[i] - b[k] * r                  # То же самое со столбцом свободных членов
+
+    diag = np.array([a[i][i] for i in range(n)])    # Запоминаем значения главной диагонали
+
+    for i in range(0, n):                           # И делим на них каждую всю строку,
+        for j in range(0, n):                       # чтобы получить единицу на главной диагонали
+            a[i][j] = a[i][j] / diag[i]
+        b[i] = b[i] / diag[i]
 
     return a, b
 
@@ -36,9 +43,9 @@ def backward(a, b):
 
 
 if __name__ == '__main__':
-    print('Исходная матрица коэффициентов:\n', a)
-    print('Исходный столбец свободных членов:\n', b)
-    matrix = forward(a, b)
+    print('Исходная матрица коэффициентов:\n', a_test2)
+    print('Исходный столбец свободных членов:\n', b_test2)
+    matrix = forward(a_test2, b_test2)
     print('\nМатрица коэффициентов после прямого хода:\n', matrix[0])
     print('Столбец свободных членов:\n', matrix[1])
 
