@@ -1,32 +1,38 @@
 import numpy as np
+import copy
 
 
-def forward(a, b):
+def forward(a, b, method=None):
     """
     Функция приводит матрицу к треугольному виду, применяя метод Гаусса (схему единственного деления). Прямой ход.
 
     :param a: исходная матрица A
     :param b: исходный столбец свободных членов b
+    :param method: single — схема единственного деления,
     :return: матрица и столбец свободных членов после применения метода Гаусса
     """
+    a_copy = copy.deepcopy(a)
+    b_copy = copy.deepcopy(b)
+
     # Размерность матрицы
-    n = len(a[0])
+    n = len(a_copy[0])
 
     for k in range(0, n):                           # Проходим каждый столбец, одна итерация этого цикла зануляет его
         for i in range(k + 1, n):                   # Элемент под главной диагональю
-            r = a[i][k] / a[k][k]
-            for j in range(k, n):                   # Вычитаем из всей строки другую, k-й элемент равен нулю
-                a[i][j] = a[i][j] - r * a[k][j]
-            b[i] = b[i] - b[k] * r                  # То же самое со столбцом свободных членов
+            r = a_copy[i][k] / a_copy[k][k]
+            for j in range(k, n):                               # Вычитаем из всей строки другую, k-й элемент равен нулю
+                a_copy[i][j] = a_copy[i][j] - r * a_copy[k][j]
+            b_copy[i] = b_copy[i] - b_copy[k] * r               # То же самое со столбцом свободных членов
 
-    diag = np.array([a[i][i] for i in range(n)])    # Запоминаем значения главной диагонали
+    if method == 'single':
+        diag = np.array([a_copy[i][i] for i in range(n)])       # Запоминаем значения главной диагонали
 
-    for i in range(0, n):                           # И делим на них каждую всю строку,
-        for j in range(0, n):                       # чтобы получить единицу на главной диагонали
-            a[i][j] = a[i][j] / diag[i]
-        b[i] = b[i] / diag[i]
+        for i in range(0, n):                                   # И делим на них каждую всю строку,
+            for j in range(0, n):                               # чтобы получить единицу на главной диагонали
+                a_copy[i][j] = a_copy[i][j] / diag[i]
+            b_copy[i] = b_copy[i] / diag[i]
 
-    return a, b
+    return a_copy, b_copy
 
 
 def backward(a, b):
@@ -53,23 +59,24 @@ def backward(a, b):
     return x
 
 
-def gaussian(a, b):
+def gaussian(a, b, out=False):
     """
     Функция вычисляет значения x СЛАУ Ax=b, применяя метод Гаусса (схему единственного деления).
     В консоль выводятся исходные данные, промежуточные и финальные результаты.
 
     :param a: исходная матрица A
     :param b: исходный столбец свободных членов b
+    :param out: флаг для вывода процесса в консоль (по умолчанию False)
     :return: вектор со значениями x
     """
-    print('Исходная матрица коэффициентов:\n', a)
-    print('Исходный столбец свободных членов:\n', b)
+    a_forward, b_forward = forward(a, b, method='single')
+    x = backward(a_forward, b_forward)
 
-    forward_result = forward(a, b)
-    print('\nМатрица коэффициентов после прямого хода:\n', forward_result[0])
-    print('Столбец свободных членов:\n', forward_result[1])
-
-    x = backward(forward_result[0], forward_result[1])
-    print('\nВектор со значениями x:\n', x)
+    if out:
+        print('Исходная матрица коэффициентов:\n', a)
+        print('Исходный столбец свободных членов:\n', b)
+        print('\nМатрица коэффициентов после прямого хода:\n', a_forward)
+        print('Столбец свободных членов:\n', b_forward)
+        print('\nВектор со значениями x:\n', x)
 
     return x
