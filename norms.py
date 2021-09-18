@@ -1,44 +1,52 @@
 import numpy as np
-from data import a, b
 
 
 def norm(a, p):
+    """
+    Функция вычисления нормы матрицы.
+
+    :param a: матрица
+    :param p: значение для P-нормы
+    :return: норма матрицы
+    """
     # Абсолютные значения матрицы
     abs = np.absolute(a)
 
-    # P-норма при p = 1
-    # Максимальная сумма столбцов
-    if p == 1:
-        sums = np.sum(abs, axis=0)
+    if p == 1:                          # P-норма при p = 1
+        sums = np.sum(abs, axis=0)      # Максимальная сумма столбцов
         answer = np.max(sums)
-    # P-норма при p = inf
-    # Максимальная сумма строк
-    elif p == 'inf':
-        sums = np.sum(abs, axis=1)
+
+    elif p == 'inf':                    # P-норма при p = inf
+        sums = np.sum(abs, axis=1)      # Максимальная сумма строк
         answer = np.max(sums)
-    # Норма Фробениуса (по умолчанию), P-норма при p = 2
-    else:
+
+    else:                               # Норма Фробениуса (по умолчанию), P-норма при p = 2
         answer = np.sqrt(np.sum(np.square(abs)))
 
     return answer
 
 
-# Вычисление приколов для приколов
 def residuals(a, b, x):
+    """
+    Функция вычисления невязок.
+
+    :param a: исходная матрица
+    :param b: исходный столбец свободных членов
+    :param x: вычисленные значения x СЛАУ
+    """
     # Размерность матрицы
     n = len(a[0])
 
     sum = np.zeros((n, 1))
-    for i in range(n):
+    for i in range(n):                  # Подставляем x в уравнения
         for j in range(n):
             sum[i] += a[i][j] * x[j]
 
     res = np.zeros((n, 1))
-    for i in range(n):
+    for i in range(n):                  # Вычитаем из столбца свободных членов
         res[i] = b[i] - sum[i]
 
     print('\nНевязки:')
-    print('||X||1 = ', norm(res, 1))
-    print('||X||2 = ', norm(res, 2))
-    print('||X||inf = ', norm(res, 'inf'))
-
+    print('P-норма при p = 1: ', norm(res, 1))
+    print('Норма Фробениуса: ', norm(res, 2))
+    print('P-норма при p = inf: ', norm(res, 'inf'))
