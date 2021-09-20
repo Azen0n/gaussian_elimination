@@ -8,7 +8,7 @@ def forward(a, b, method=None):
 
     :param a: исходная матрица A
     :param b: исходный столбец свободных членов b
-    :param method: single — схема единственного деления,
+    :param method: single — схема единственного деления, identity — единичная матрица
     :return: матрица и столбец свободных членов после применения метода Гаусса
     """
     a_copy = copy.deepcopy(a)
@@ -24,13 +24,20 @@ def forward(a, b, method=None):
                 a_copy[i][j] = a_copy[i][j] - r * a_copy[k][j]
             b_copy[i] = b_copy[i] - b_copy[k] * r               # То же самое со столбцом свободных членов
 
-    if method == 'single':
-        diag = np.array([a_copy[i][i] for i in range(n)])       # Запоминаем значения главной диагонали
+    if method == 'single':                          # Единицы на главной диагонали
+        diagonal_ones(a_copy, b_copy)
 
-        for i in range(0, n):                                   # И делим на них каждую всю строку,
-            for j in range(0, n):                               # чтобы получить единицу на главной диагонали
-                a_copy[i][j] = a_copy[i][j] / diag[i]
-            b_copy[i] = b_copy[i] / diag[i]
+    if method == 'identity':                        # Обратный цикл, после которого над главной диагональю
+        for k in range(n - 1, -1, -1):              # тоже получаются нули
+            for i in range(k - 1, -1, -1):
+                r = a_copy[i][k] / a_copy[k][k]
+                for j in range(n - 1, k - 1, -1):
+                    a_copy[i][j] = a_copy[i][j] - r * a_copy[k][j]
+                b_copy[i] = b_copy[i] - b_copy[k] * r
+
+        # В конце на главной диагонали устанавливаются нули,
+        # после чего a_copy становится единичной матрицей, а b_copy — обратной матрицей исходной
+        diagonal_ones(a_copy, b_copy)
 
     return a_copy, b_copy
 
@@ -57,6 +64,25 @@ def backward(a, b):
         x[i] = (b[i] - sum) / a[i][i]       # И делим на соответсвующее значение матрицы a на главной диагонали
 
     return x
+
+
+def diagonal_ones(a, b):
+    """
+    Функция с помощью элементарных преобразований образует единицы на главной диагонали матрицы.
+    **Функция меняет массивы напрямую, не создавая копии.**
+
+    :param a: исходная матрица
+    :param b: исходный столбец свободных членов
+    """
+    # Размерность матрицы
+    n = len(a[0])
+
+    diag = np.array([a[i][i] for i in range(n)])    # Запоминаем значения главной диагонали
+
+    for i in range(0, n):                           # И делим на них каждую всю строку,
+        for j in range(0, n):                       # чтобы получить единицу на главной диагонали
+            a[i][j] = a[i][j] / diag[i]
+        b[i] = b[i] / diag[i]
 
 
 def gaussian(a, b, out=False):
