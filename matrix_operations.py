@@ -1,6 +1,90 @@
 import numpy as np
-from gaussian_algorithm import forward
-from data import a_test2
+import copy
+from data import a_test2, b_test2
+from norms import norm
+
+
+def forward(a, b, method=None):
+    """
+    Функция приводит матрицу к треугольному виду, применяя метод Гаусса (схему единственного деления). Прямой ход.
+
+    :param a: исходная матрица A
+    :param b: исходный столбец свободных членов b
+    :param method: single — схема единственного деления, identity — единичная матрица
+    :return: матрица и столбец свободных членов после применения метода Гаусса
+    """
+    a_copy = copy.deepcopy(a)
+    b_copy = copy.deepcopy(b)
+
+    # Размерность матрицы
+    n = len(a_copy[0])
+
+    for k in range(0, n):                           # Проходим каждый столбец, одна итерация этого цикла зануляет его
+        for i in range(k + 1, n):                   # Элемент под главной диагональю
+            r = a_copy[i][k] / a_copy[k][k]
+            for j in range(k, n):                               # Вычитаем из всей строки другую, k-й элемент равен нулю
+                a_copy[i][j] = a_copy[i][j] - r * a_copy[k][j]
+            b_copy[i] = b_copy[i] - b_copy[k] * r               # То же самое со столбцом свободных членов
+
+    if method == 'single':                          # Единицы на главной диагонали
+        diagonal_ones(a_copy, b_copy)
+
+    if method == 'identity':                        # Обратный цикл, после которого над главной диагональю
+        for k in range(n - 1, -1, -1):              # тоже получаются нули
+            for i in range(k - 1, -1, -1):
+                r = a_copy[i][k] / a_copy[k][k]
+                for j in range(n - 1, k - 1, -1):
+                    a_copy[i][j] = a_copy[i][j] - r * a_copy[k][j]
+                b_copy[i] = b_copy[i] - b_copy[k] * r
+
+        # В конце на главной диагонали устанавливаются нули,
+        # после чего a_copy становится единичной матрицей, а b_copy — обратной матрицей исходной
+        diagonal_ones(a_copy, b_copy)
+
+    return a_copy, b_copy
+
+
+def backward(a, b):
+    """
+    Функция вычисляет значения x СЛАУ Ax=b у матрицы треугольного вида. Обратный ход.
+
+    :param a: матрица треугольного вида
+    :param b: столбец свободных членов после применения метода Гаусса
+    :return: вектор со значениями x
+    """
+    # Размерность матрицы
+    n = len(a[0])
+
+    # Вектор со значениями x
+    x = np.zeros(n)
+    x[n - 1] = b[n - 1] / a[n - 1][n - 1]   # Вычисление x_n
+
+    for i in range(n - 2, -1, -1):          # Вычисление остальных x, начиная с предпоследнего
+        sum = 0
+        for j in range(i + 1, n):           # В цикле умножаем уже вычисленные значения x на значения матрицы a
+            sum += a[i][j] * x[j]
+        x[i] = (b[i] - sum) / a[i][i]       # И делим на соответсвующее значение матрицы a на главной диагонали
+
+    return x
+
+
+def diagonal_ones(a, b):
+    """
+    Функция с помощью элементарных преобразований образует единицы на главной диагонали матрицы.
+    **Функция меняет массивы напрямую, не создавая копии.**
+
+    :param a: исходная матрица
+    :param b: исходный столбец свободных членов
+    """
+    # Размерность матрицы
+    n = len(a[0])
+
+    diag = np.array([a[i][i] for i in range(n)])    # Запоминаем значения главной диагонали
+
+    for i in range(0, n):                           # И делим на них каждую всю строку,
+        for j in range(0, n):                       # чтобы получить единицу на главной диагонали
+            a[i][j] = a[i][j] / diag[i]
+        b[i] = b[i] / diag[i]
 
 
 def determinant(a):
@@ -44,3 +128,109 @@ def inverse(a):
     a, b = forward(a, identity_matrix, method='identity')
 
     return b
+
+
+def gaussian(a, b, method=None, out=False):
+    """
+    Функция вычисляет значения x СЛАУ Ax=b, применяя метод Гаусса (схему единственного деления).
+    В консоль выводятся исходные данные, промежуточные и финальные результаты.
+
+    :param a: исходная матрица A
+    :param b: исходный столбец свободных членов b
+    :param method: single — схема единственного деления, identity — единичная матрица
+    :param out: флаг для вывода процесса в консоль (по умолчанию False)
+    :return: вектор со значениями x
+    """
+    a_forward, b_forward = forward(a, b, method=method)
+    x = backward(a_forward, b_forward)
+
+    if out:
+        print('Исходная матрица коэффициентов:\n', a)
+        print('Исходный столбец свободных членов:\n', b)
+        print('\nМатрица коэффициентов после прямого хода:\n', a_forward)
+        print('Столбец свободных членов:\n', b_forward)
+        print('\nВектор со значениями x:\n', x)
+
+    return x
+
+
+def condition_number(a):
+    """
+    Функция находит числа обусловленности для матрицы a, применяя нормы 1 и 2.
+
+    :param a: исходная матрица
+    :return: числа обусловленности
+    """
+    inverted_a = inverse(a)
+    norm1 = norm(a, p=1)
+    norm1_inverted = norm(inverted_a, p=1)
+    norm2 = norm(a, p=2)
+    norm2_inverted = norm(inverted_a, p=2)
+
+    condition_number1 = norm1 * norm1_inverted
+    condition_number2 = norm2 * norm2_inverted
+
+    return condition_number1, condition_number2
+
+
+def calculate_error(x, x_delta, p):
+    """
+    Функция вычисляет относительную погрешность решения, применяя p-норму.
+
+    :param x: исходный вектор (решение СЛАУ)
+    :param x_delta: вектор с погрешностью
+    :param p: значение p нормы
+    :return: относительная погрешность решения
+    """
+    x_norm = norm(x, p=p)
+    x_norm_delta = norm(x_delta, p=p)
+    error = x_norm_delta / x_norm
+
+    return error
+
+
+def constant_terms_error(a, b, noise_value=0.01, method=None):
+    """
+    Функция вычисляет относительную погрешность решения и оценивает ее по формуле:
+
+    .. math:: \\frac{\\|\\Delta x\\|}{\\|x\\|} \\leq \\nu (A) \\frac{\\|\\Delta b\\|}{\\|b\\|}
+
+    :param a: исходная матрица
+    :param b: исходный столбец свободных членов
+    :param noise_value: значение погрешности (по умолчанию 0.01)
+    :param method: метод Гаусса
+    """
+    b_delta = b + noise_value                       # Прибавление погрешности к столбцу свободных членов
+
+    x = gaussian(a, b, method=method)
+    x_delta = gaussian(a, b_delta, method=method)
+
+    x_error1 = calculate_error(x, x_delta, p=1)     # Относительная погрешность решения вектора x, p = 1
+    x_error2 = calculate_error(x, x_delta, p=2)     # Относительная погрешность решения вектора x, p = 1
+
+    print('Относительная погрешность решения:')
+    print('При p = 1: %.15f' % x_error1)
+    print('При p = 2: %.15f' % x_error2)
+
+    condition_number1, condition_number2 = condition_number(a)  # Числа обусловленности v(a)
+
+    b_delta = noise_value                           # Непонятный ход
+
+    b_error1 = calculate_error(b, b_delta, p=1)     # Относительная погрешность решения вектора b, p = 1
+    b_error2 = calculate_error(b, b_delta, p=2)     # Относительная погрешность решения вектора b, p = 1
+
+    if x_error1 <= condition_number1 * b_error1:
+        print('\nПри норме p = 1 матрица исходной системы уравнений хорошо обусловлена: неравенство выполняется.')
+    else:
+        print('\nПри норме p = 1 матрица исходной системы уравнений является плохо обусловленной, так как неравенство '
+              'не выполняется.')
+
+    if x_error2 <= condition_number2 * b_error2:
+        print('При норме p = 2 матрица исходной системы уравнений хорошо обусловлена: неравенство выполняется.')
+    else:
+        print('При норме p = 2 матрица исходной системы уравнений является плохо обусловленной, так как неравенство '
+              'не выполняется.')
+
+
+if __name__ == '__main__':
+    constant_terms_error(a_test2, b_test2, 0.01, method='single')
