@@ -1,8 +1,7 @@
 import numpy as np
 from data import a_test2, b_test2
-from gaussian_algorithm import gaussian
-from norms import norm, residuals
-from matrix_operations import determinant, inverse, identity
+from matrix_operations import gaussian, condition_number, determinant, inverse, identity, constant_terms_error
+from norms import residuals
 
 matrix = a_test2
 # Размерность матрицы
@@ -22,13 +21,8 @@ if np.array_equal(product, identity_matrix):
 else:
     print('Получена не единичная матрица. Равенство неверно.')
 
-norm1 = norm(matrix, p=1)
-norm1_inverted = norm(inverted_matrix, p=1)
-normF = norm(matrix, p=2)
-normF_inverted = norm(inverted_matrix, p=2)
-
-condition_number1 = norm1 * norm1_inverted
-condition_numberF = normF * normF_inverted
-
+condition_number1, condition_number2 = condition_number(matrix)
 print('\nЧисла обусловленности:')
-print('1. %.15f\n2. %.15f' % (condition_number1, condition_numberF))
+print('1. %.15f\n2. %.15f\n' % (condition_number1, condition_number2))
+
+constant_terms_error(a_test2, b_test2, 0.01, method='single')
