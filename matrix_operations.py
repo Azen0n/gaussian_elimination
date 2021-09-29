@@ -2,6 +2,7 @@ import numpy as np
 import copy
 from data import a_test, b_test, a_test2, b_test2
 from norms import norm
+np.set_printoptions(precision=15)
 
 
 def forward(a, b, method=None):
@@ -13,7 +14,9 @@ def forward(a, b, method=None):
     :param method:  single — схема единственного деления,
                     identity — единичная матрица,
                     pivot — с выбором главного элемента,
-                    lu — LU-разложение
+                    lu — LU-разложение,
+                    cholesky — метод квадратного корня (разложение Холецкого),
+                    tridiagonal — метод прогонки
     :return: матрица и столбец свободных членов после применения метода Гаусса
     """
     # Массив с методами, приводящими матрицу к треугольному виду
@@ -69,21 +72,57 @@ def forward(a, b, method=None):
         l = np.zeros((n, n))                        # и верхнюю треугольную U, произведение которых дает исходную
         u = copy.deepcopy(a_copy)
 
-        for i in range(n):                          # Проходим каждый столбец исходной матрицы и делим j-й элемент
-            for j in range(i, n):                   # на соответствующий на главной диагонали. В результате получается
-                l[j][i] = u[j][i] / u[i][i]         # нижняя треугольная матрица с единицами на главной диагонали
+        for k in range(1, n):
+            for i in range(k - 1, n):               # Проходим каждый столбец исходной матрицы и делим j-й элемент
+                for j in range(i, n):               # на соответствующий на главной диагонали. В результате получается
+                    l[j][i] = u[j][i] / u[i][i]     # нижняя треугольная матрица с единицами на главной диагонали
 
-        for k in range(1, n):                       #
-            for i in range(k - 1, n):
-                for j in range(i, n):
-                    l[j][i] = u[j][i] / u[i][i]
-
-            for i in range(k, n):
-                for j in range(k - 1, n):
+            for i in range(k, n):                   # Проходим строки
+                for j in range(k - 1, n):           # и меняем элементы, зануляя элементы под главной диагональю
                     u[i][j] = u[i][j] - l[i][k - 1] * u[k - 1][j]
 
         # L — нижняя треугольная матрица с единицами на главной диагонали, U — верхняя (без единиц на главной диагонали)
         return (l, u), b_copy
+
+    # Метод квадратного корня (разложение Холецкого)
+    if method == 'cholesky':
+        l = np.zeros((n, n))
+
+        l[0][0] = np.sqrt(a_copy[0][0])
+        for i in range(1, n):               # Первый столбец
+            l[i][0] = a_copy[i][0] / l[0][0]
+
+        for i in range(1, n):
+            sum = 0.0
+            for k in range(0, i):           # Суммируем квадраты всех элементов
+                sum += np.square(l[i][k])   # слева от элемента на главной диагонали
+            l[i][i] = np.sqrt(a_copy[i][i] - sum)
+
+            for j in range(i + 1, n):       # Проходим элементы под главной диагональю
+                sum = 0.0
+                for k in range(0, i):
+                    sum += l[j][k] * l[i][k]
+                l[j][i] = (a_copy[j][i] - sum) / l[i][i]
+
+        return (l, l.T), b_copy
+
+    # Метод прогонки
+    if method == 'tridiagonal':
+        p = a_copy[0][1] / a_copy[0][0]         # Прогоночные коэффициенты
+        q = -b_copy[0] / a_copy[0][0]
+        p_array, q_array = np.zeros(n), np.zeros(n)
+
+        p_array[0] = p
+        q_array[0] = q
+
+        for i in range(1, n - 1):               # Вычисление коэффициентов, начиная со вторых
+            p = a[i][i + 1] / (-a_copy[i][i - 1] * p + a[i][i])
+            q = (-b_copy[i] + a_copy[i][i - 1] * q) / (-a_copy[i][i - 1] * p + a[i][i])
+
+            p_array[i] = p
+            q_array[i] = q
+
+        return (p_array, q_array), b_copy       # Все коэффициенты далее используются в обратном ходе
 
     return a_copy, b_copy
 
@@ -97,7 +136,9 @@ def backward(a, b, method=None):
     :param method:  single — схема единственного деления,
                     identity — единичная матрица,
                     pivot — с выбором главного элемента,
-                    lu — LU-разложение
+                    lu — LU-разложение,
+                    cholesky — метод квадратного корня (разложение Холецкого),
+                    tridiagonal — метод прогонки
     :return: вектор со значениями x
     """
     # Размерность матрицы
@@ -111,10 +152,17 @@ def backward(a, b, method=None):
         for i in range(n):                      # Каждой единице присваивается соответствующее значение вектора b
             x[max[i]] = b[i]
 
-    elif method == 'lu':
+    elif method == 'lu' or method == 'cholesky':
         l, u = a[0], a[1]
         y = backward(l, b, method='lower')      # Решение системы Ly = b
         x = backward(u, y)                      # Решение системы Ux = y
+
+    elif method == 'tridiagonal':               # Метод прогонки
+        p_array, q_array = a[0], a[1]
+        x[-1] = q_array[-1]
+
+        for i in range(n - 2, -1, -1):          # Значения для выходного вектора вычисляются по прогоночной формуле
+            x[i] = p_array[i] * x[i + 1] + q_array[i]
 
     elif method == 'lower':                     # Обратный ход для нижней треугольной матрицы
         x[0] = b[0] / a[0][0]                   # Вычисление x_1
@@ -209,7 +257,9 @@ def gaussian(a, b, method=None, out=False):
     :param method:  single — схема единственного деления,
                     identity — единичная матрица,
                     pivot — с выбором главного элемента,
-                    lu — LU-разложение
+                    lu — LU-разложение,
+                    cholesky — метод квадратного корня (разложение Холецкого),
+                    tridiagonal — метод прогонки
     :param out: флаг для вывода процесса в консоль (по умолчанию False)
     :return: вектор со значениями x
     """
@@ -225,6 +275,15 @@ def gaussian(a, b, method=None, out=False):
             print('\nМатрица U после прямого хода:\n', a_forward[1])
 
             print('\nПроверка A = L * U:\n', a_forward[0].dot(a_forward[1]))
+
+        elif method == 'cholesky':
+            print('\nМатрица L после прямого хода:\n', a_forward[0])
+            print('\nТранспонированная матрица L после прямого хода:\n', a_forward[1])
+
+            print('\nПроверка A = L * L^T:\n', a_forward[0].dot(a_forward[1]))
+        elif method == 'tridiagonal':
+            print('\nКоэффициенты P:\n', a_forward[0])
+            print('\nКоэффициенты Q:\n', a_forward[1])
         else:
             print('\nМатрица коэффициентов после прямого хода:\n', a_forward)
 
@@ -352,7 +411,3 @@ def coefficients_error(a, b, noise_value=0.01, method=None):
     print('\nОтносительная погрешность решения:')
     print('При p = 1: %.15f' % x_error1)
     print('При p = 2: %.15f' % x_error2)
-
-
-if __name__ == '__main__':
-    x = gaussian(a_test2, b_test2, method='lu', out=True)
