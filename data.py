@@ -1,18 +1,18 @@
 import numpy as np
 
-# Вариант 20
+# Вариант 21
 # Матрица коэффициентов системы
 a = np.array([
-    [4.59, 4.83, 4.06],
-    [4.24, 4.36, 3.53],
-    [3.82, 3.88, 3.01]
+    [4.56, 4.20, 3.78],
+    [3.21, 2.73, 2.25],
+    [4.58, 4.04, 3.52]
 ])
 
 # Столбец свободных членов
 b = np.array([
-    [59.54],
-    [62.33],
-    [52.11]
+    [61.86],
+    [42.98],
+    [61.67]
 ])
 
 # Данные для тестов. Ответ: x_1 = -0.5; x_2 = 1; x_3 = 0.5
@@ -42,3 +42,17 @@ b_test2 = np.array([
     [-3.69],
     [-5.98]
 ])
+
+tridiagonal_size = 5
+m = 21
+a_tridiagonal = np.zeros((tridiagonal_size, tridiagonal_size))
+b_tridiagonal = np.zeros((tridiagonal_size, 1))
+
+for i in range(tridiagonal_size):
+    a_tridiagonal[i][i] = 100
+    if i != tridiagonal_size - 1:
+        a_tridiagonal[i][i + 1] = 0.2 * m
+    if i != 0:
+        a_tridiagonal[i][i - 1] = 0.3 * m
+
+    b_tridiagonal[i][0] = m * (i + 1) * np.exp(5 / (i + 1)) * np.sin(9 / (i + 1))
