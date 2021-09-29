@@ -47,6 +47,6 @@ def residuals(a, b, x):
         res[i] = b[i] - sum[i]
 
     print('\nНевязки:')
-    print('P-норма при p = 1: %.15f' % norm(res, 1))
-    print('Норма Фробениуса: %.15f' % norm(res, 2))
-    print('P-норма при p = inf: %.15f' % norm(res, 'inf'))
+    print('Манхэттенская норма (p = 1): %.15f' % norm(res, 1))
+    print('Норма Фробениуса (p = 2): %.15f' % norm(res, 2))
+    print('Максимальная норма (p = inf): %.15f' % norm(res, 'inf'))
