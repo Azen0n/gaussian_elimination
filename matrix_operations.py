@@ -213,7 +213,7 @@ def determinant(a):
     """
     # Некрасиво, зато не требует еще один аргумент и исходную функцию можно не трогать
     triangular, b = forward(a, np.zeros((len(a[0]), 1)))
-    return np.trace(triangular)
+    return triangular.diagonal().prod()
 
 
 def identity(n):
