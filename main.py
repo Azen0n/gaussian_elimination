@@ -56,7 +56,13 @@ x2 = gaussian(matrix, constant_terms, out=True, method='pivot')
 print('\n----------------Метод Гаусса: LU-разложение матрицы A----------------')
 x3 = gaussian(matrix, constant_terms, out=True, method='lu')
 
+print('\nНевязки (Метод Гаусса: схема единственного деления):')
 residuals(matrix, constant_terms, x)
+print('\nНевязки (Метод Гаусса: с выбором главного элемента):')
+residuals(matrix, constant_terms, x2)
+print('\nНевязки (Метод Гаусса: LU-разложение матрицы A):')
+residuals(matrix, constant_terms, x3)
+
 print('\nОпределитель матрицы: ', determinant(matrix))
 print('\nОбратная матрица:\n', inverse(matrix))
 
