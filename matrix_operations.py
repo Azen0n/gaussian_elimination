@@ -302,10 +302,10 @@ def condition_number(a):
     :return: числа обусловленности
     """
     inverted_a = inverse(a)
-    norm1 = norm(a, p=1)
-    norm1_inverted = norm(inverted_a, p=1)
-    norm2 = norm(a, p=2)
-    norm2_inverted = norm(inverted_a, p=2)
+    norm1 = norm(a, p='1')
+    norm1_inverted = norm(inverted_a, p='1')
+    norm2 = norm(a, p='2')
+    norm2_inverted = norm(inverted_a, p='2')
 
     condition_number1 = norm1 * norm1_inverted
     condition_number2 = norm2 * norm2_inverted
@@ -414,3 +414,133 @@ def coefficients_error(a, b, noise_value=0.01, method=None):
     print('\nОтносительная погрешность решения:')
     print('При p = 1: %.15f' % x_error1)
     print('При p = 2: %.15f' % x_error2)
+
+
+def convergence_rate(a):
+    """
+    Проверка выполнения достаточного условия сходимости для матрицы a.
+
+    :param a: исходная матрица
+    :return: 1 — условие выполняется, 0 — не выполняется
+    """
+    # Диагональное преобладание матрицы:
+    # элемент на главной диагонали по модулю больше суммы всех других элементов строки
+    is_diagonal_dominant = norm(a, 'inf') < 1
+
+    return 1 if is_diagonal_dominant else 0
+
+
+def to_iterative_form(a, b):
+    """
+    Функция приводит уравнение Ax = b к виду x = αx + β.
+
+    :param a: исходная матрица
+    :param b: исходный столбец свободных членов
+    :return: матрица α и столбец свободных членов β
+    """
+    alpha = copy.deepcopy(a)
+    beta = copy.deepcopy(b)
+
+    # Размерность матрицы
+    n = len(a[0])
+
+    for i in range(n):
+        for j in range(n):
+            if i == j:
+                alpha[i][j] = 0.0
+            else:
+                alpha[i][j] = -a[i][j] / a[i][i]
+        beta[i] = b[i] / a[i][i]
+
+    return alpha, beta
+
+
+def iterative(alpha, beta, eps, method, out=False):
+    """
+    Функция вычисляет значения x СЛАУ вида x = αx + β.
+
+    :param alpha: матрица значений α
+    :param beta: столбец свободных членов β
+    :param eps: заданная точность
+    :param method:  simple — метод простых итераций,
+                    seidel — метод Зейделя
+    :param out: флаг для вывода процесса в консоль (по умолчанию False)
+    :return: вектор со значениями x
+    """
+    n = len(alpha[0])           # Размерность матрицы
+    x_prev = beta.flatten()     # Предыдущий (k - 1) вектор со значениями x
+    x = np.zeros(n)             # Текущий (k) вектор со значениями x
+    k = 1                       # Число итераций — в обоих методах первая итерация идет вне цикла, поэтому 1
+
+    if method == 'simple':
+        q = norm(alpha, 'inf')
+
+        for i in range(n):          # Первая итерация
+            sum = 0.0
+            for j in range(n):
+                sum += alpha[i][j] * x_prev[j]
+            x[i] = sum + beta[i]
+
+        while norm((x - x_prev), '1') >= eps * (1 - q) / q:       # Условие окончания итерационного процесса
+            x_prev = copy.deepcopy(x)
+            k += 1
+            for i in range(n):
+                sum = 0.0
+                for j in range(n):
+                    sum += alpha[i][j] * x_prev[j]
+                x[i] = sum + beta[i]
+
+    if method == 'seidel':
+
+        mu_value = np.zeros(n)
+        for i in range(n):
+            sum_upper = 0.0
+            for j in range(i, n):
+                sum_upper += np.absolute(alpha[i][j])
+            sum_lower = 0.0
+            for j in range(i - 1):
+                sum_lower += np.absolute(alpha[i][j])
+            mu_value[i] = sum_upper / (1 - sum_lower)
+
+        mu = norm(mu_value, 'inf')
+
+        x = copy.deepcopy(x_prev)
+
+        for i in range(n):          # Первая итерация
+            sum = 0.0
+            for j in range(n):
+                sum += alpha[i][j] * x[j]
+            x[i] = sum + beta[i]
+
+        while norm((x - x_prev), '1') >= eps * (1 - mu) / mu:     # Условие окончания итерационного процесса
+            x_prev = copy.deepcopy(x)
+            k += 1
+            for i in range(n):
+                sum = 0.0
+                for j in range(n):
+                    sum += alpha[i][j] * x[j]
+                x[i] = sum + beta[i]
+
+    if out:
+        print('\nВектор со значениями x:\n', x)
+        print('\nТочность:', eps)
+        print('Количество итераций:', k)
+
+        return x
+
+    return x, k
+
+
+def calculate_error_iterative(x, x_delta, p):
+    """
+    Функция вычисляет абсолютную и относительную погрешности решения, применяя p-норму.
+
+    :param x: исходный вектор (решение СЛАУ)
+    :param x_delta: вектор приближенных значений
+    :param p: значение p нормы
+    :return: относительная погрешность решения
+    """
+    absolute_error = norm((x - x_delta), p=p)
+    relative_error = absolute_error / norm(x_delta, p=p)
+
+    return absolute_error, relative_error
