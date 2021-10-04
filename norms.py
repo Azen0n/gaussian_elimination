@@ -12,16 +12,19 @@ def norm(a, p):
     # Абсолютные значения матрицы
     abs = np.absolute(a)
 
-    if p == 1:                          # P-норма при p = 1
-        sums = np.sum(abs, axis=0)      # Максимальная сумма столбцов
-        answer = np.max(sums)
+    if p == '1':                        # P-норма при p = 1
+        if a.ndim == 1:
+            answer = np.max(abs)
+        else:
+            sums = np.sum(abs, axis=1)  # Максимальная сумма столбцов
+            answer = np.max(sums)
+
+    elif p == '2':                      # Норма Фробениуса, P-норма при p = 2
+        answer = np.sqrt(np.sum(np.square(abs)))
 
     elif p == 'inf':                    # P-норма при p = inf
-        sums = np.sum(abs, axis=1)      # Максимальная сумма строк
+        sums = np.sum(abs, axis=0)      # Максимальная сумма строк
         answer = np.max(sums)
-
-    else:                               # Норма Фробениуса (по умолчанию), P-норма при p = 2
-        answer = np.sqrt(np.sum(np.square(abs)))
 
     return answer
 
