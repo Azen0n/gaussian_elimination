@@ -351,8 +351,8 @@ def constant_terms_error(a, b, noise_value=0.01, method=None):
     b_delta = np.subtract(b_new, b)                 # Вычисление разницы новых и старых значений
     x_delta = np.subtract(x_new, x)
 
-    x_error1 = calculate_error(x, x_delta, p=1)     # Относительная погрешность решения вектора x, p = 1
-    x_error2 = calculate_error(x, x_delta, p=2)     # Относительная погрешность решения вектора x, p = 1
+    x_error1 = calculate_error(x, x_delta, p='1')   # Относительная погрешность решения вектора x, p = 1
+    x_error2 = calculate_error(x, x_delta, p='2')   # Относительная погрешность решения вектора x, p = 1
 
     print('Относительная погрешность решения:')
     print('При p = 1: %.15f' % x_error1)
@@ -360,8 +360,8 @@ def constant_terms_error(a, b, noise_value=0.01, method=None):
 
     condition_number1, condition_number2 = condition_number(a)  # Числа обусловленности v(a)
 
-    b_error1 = calculate_error(b, b_delta, p=1)     # Относительная погрешность решения вектора b, p = 1
-    b_error2 = calculate_error(b, b_delta, p=2)     # Относительная погрешность решения вектора b, p = 1
+    b_error1 = calculate_error(b, b_delta, p='1')   # Относительная погрешность решения вектора b, p = 1
+    b_error2 = calculate_error(b, b_delta, p='2')   # Относительная погрешность решения вектора b, p = 1
 
     print('\nПогрешность: %s' % noise_value)
     print('Столбец свободных членов с погрешностью:')
@@ -402,8 +402,8 @@ def coefficients_error(a, b, noise_value=0.01, method=None):
 
     x_delta = np.subtract(x_new, x)                 # Вычисление разницы новых и старых значений
 
-    x_error1 = calculate_error(x, x_delta, p=1)     # Относительная погрешность решения вектора x, p = 1
-    x_error2 = calculate_error(x, x_delta, p=2)     # Относительная погрешность решения вектора x, p = 1
+    x_error1 = calculate_error(x, x_delta, p='1')   # Относительная погрешность решения вектора x, p = 1
+    x_error2 = calculate_error(x, x_delta, p='2')   # Относительная погрешность решения вектора x, p = 1
 
     print('\nПогрешность: %s' % noise_value)
     print('Матрица коэффициентов с погрешностью:')
