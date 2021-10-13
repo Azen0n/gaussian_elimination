@@ -70,3 +70,15 @@ b_iterative = np.array(
      [-0.9876],
      [-2.0812]]
 )
+
+
+def function(x):
+    """Нелинейная функция, вариант 21"""
+    e = np.log((1 + x) / (1 - x))
+    r = np.cos(x) ** 2.0
+    return np.log((1 + x) / (1 - x)) - np.cos(x) ** 2.0
+
+
+def derivative(x):
+    """Производная функции, вариант 21"""
+    return (2.0 * x ** 2 * np.cos(x) * np.sin(x) - 2) / (x ** 2 - 1)
