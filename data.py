@@ -72,13 +72,27 @@ b_iterative = np.array(
 )
 
 
+@np.vectorize
 def function(x):
     """Нелинейная функция, вариант 21"""
-    e = np.log((1 + x) / (1 - x))
-    r = np.cos(x) ** 2.0
     return np.log((1 + x) / (1 - x)) - np.cos(x) ** 2.0
 
 
+@np.vectorize
 def derivative(x):
     """Производная функции, вариант 21"""
     return (2.0 * x ** 2 * np.cos(x) * np.sin(x) - 2) / (x ** 2 - 1)
+
+
+@np.vectorize
+def iterative_function(x):
+    return (np.exp(np.cos(x) ** 2) - 1) / (np.exp(np.cos(x) ** 2) + 1)
+
+
+@np.vectorize
+def iterative_derivative(x):
+    return -(4 * np.exp(np.cos(x) ** 2) * np.cos(x) * np.sin(x)) / (np.exp(np.cos(x) ** 2) + 1) ** 2
+
+
+def iterative_function_lambda(x, lambda_value):
+    return x - lambda_value * (np.log((1 + x) / (1 - x)) - np.cos(x) ** 2.0)
