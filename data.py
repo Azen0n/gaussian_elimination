@@ -81,7 +81,7 @@ def function(x):
 @np.vectorize
 def derivative(x):
     """Производная функции, вариант 21"""
-    return (2.0 * x ** 2 * np.cos(x) * np.sin(x) - 2) / (x ** 2 - 1)
+    return ((2.0 * x ** 2 - 2.0) * np.cos(x) * np.sin(x) - 2) / (x ** 2 - 1)
 
 
 @np.vectorize
@@ -96,3 +96,7 @@ def iterative_derivative(x):
 
 def iterative_function_lambda(x, lambda_value):
     return x - lambda_value * (np.log((1 + x) / (1 - x)) - np.cos(x) ** 2.0)
+
+
+def polynomial_function(x):
+    return np.exp(x)
