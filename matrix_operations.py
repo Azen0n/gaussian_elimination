@@ -108,21 +108,18 @@ def forward(a, b, method=None):
 
     # Метод прогонки
     if method == 'tridiagonal':
-        p = a_copy[0][1] / a_copy[0][0]         # Прогоночные коэффициенты
-        q = -b_copy[0] / a_copy[0][0]
-        p_array, q_array = np.zeros(n), np.zeros(n)
-
-        p_array[0] = p
-        q_array[0] = q
+        p, q = np.zeros(n), np.zeros(n)         # Прогоночные коэффициенты
+        p[0] = a_copy[0][1] / -a_copy[0][0]
+        q[0] = -b_copy[0] / -a_copy[0][0]
 
         for i in range(1, n - 1):               # Вычисление коэффициентов, начиная со вторых
-            p = a[i][i + 1] / (-a_copy[i][i - 1] * p + a[i][i])
-            q = (-b_copy[i] + a_copy[i][i - 1] * q) / (-a_copy[i][i - 1] * p + a[i][i])
+            p[i] = a[i][i + 1] / (-a_copy[i][i - 1] * p[i - 1] - a[i][i])
+            q[i] = (-b_copy[i] + a_copy[i][i - 1] * q[i - 1]) / (-a_copy[i][i - 1] * p[i - 1] - a[i][i])
 
-            p_array[i] = p
-            q_array[i] = q
+        p[-1] = 0
+        q[-1] = (-b_copy[-1] + a_copy[-1][-2] * q[-2]) / (-a_copy[-1][-2] * p[-2] - a[-1][-1])
 
-        return (p_array, q_array), b_copy       # Все коэффициенты далее используются в обратном ходе
+        return (p, q), b_copy       # Все коэффициенты далее используются в обратном ходе
 
     return a_copy, b_copy
 
