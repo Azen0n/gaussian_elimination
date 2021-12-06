@@ -5,11 +5,11 @@ from data import polynomial_function
 from prettytable import PrettyTable
 
 
-def print_polynomial_table(function, a, b, n):
+def print_values_table(function, a, b, n):
     step = (b - a) / n
 
-    header = [np.round(a + i * step, 2) for i in range(n)]
-    data = [function(a + i * step) for i in range(n)]
+    header = [np.round(a + i * step, 2) for i in range(n + 1)]
+    data = [function(a + i * step) for i in range(n + 1)]
 
     table = PrettyTable(['x', *header])
     table.add_row(['y', *data])
@@ -80,10 +80,11 @@ def print_final_polynomial_table(function, x, y, n, step):
     print(table)
 
 
-a = 1
-b = 5
-n = 10
-step = (b - a) / n
+if __name__ == '__main__':
+    a = 1
+    b = 5
+    n = 10
+    step = (b - a) / n
 
-x, y = print_polynomial_table(polynomial_function, a, b, n)
-print_final_polynomial_table(polynomial_function, x, y, n, step)
+    x, y = print_values_table(polynomial_function, a, b, n)
+    print_final_polynomial_table(polynomial_function, x, y, n, step)

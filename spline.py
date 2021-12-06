@@ -2,7 +2,7 @@ import numpy as np
 from prettytable import PrettyTable
 
 from data import polynomial_function
-from polynomial import print_polynomial_table
+from polynomial import print_values_table
 from matrix_operations import gaussian
 
 
@@ -56,14 +56,8 @@ def print_spline_table(function, x, y, n, h):
 
     for i in range(n * 2 + 1):
         x_point = np.round(x[0] + i * h / 2.0, 1)
-
-        data = [
-            x_point,
-            function(x_point),
-            cubic_spline(x_point, x, y, n, h),
-            np.absolute(function(x_point) - cubic_spline(x_point, x, y, n, h))
-        ]
-
+        data = [x_point, function(x_point), cubic_spline(x_point, x, y, n, h),
+                np.absolute(function(x_point) - cubic_spline(x_point, x, y, n, h))]
         table.add_row(data)
 
     print(table)
@@ -74,7 +68,7 @@ def main():
     b = 5
     n = 5
     h = (b - a) / n
-    x, y = print_polynomial_table(polynomial_function, a, b, n)
+    x, y = print_values_table(polynomial_function, a, b, n)
     print_spline_table(polynomial_function, x, y, n, h)
 
 
