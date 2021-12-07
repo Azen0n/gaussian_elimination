@@ -5,17 +5,19 @@ from data import polynomial_function
 from prettytable import PrettyTable
 
 
-def print_values_table(function, a, b, n):
+def get_values(function, a, b, n):
     step = (b - a) / n
 
-    header = [np.round(a + i * step, 2) for i in range(n + 1)]
-    data = [function(a + i * step) for i in range(n + 1)]
+    x = [np.round(a + i * step, 2) for i in range(n + 1)]
+    y = [function(a + i * step) for i in range(n + 1)]
 
-    table = PrettyTable(['x', *header])
-    table.add_row(['y', *data])
+    return x, y
+
+
+def print_values_table(x, y):
+    table = PrettyTable(['x', *x])
+    table.add_row(['y', *y])
     print(table)
-
-    return header, data
 
 
 def lagrange_polynomial(x_point, x, y, n):
@@ -86,5 +88,6 @@ if __name__ == '__main__':
     n = 10
     step = (b - a) / n
 
-    x, y = print_values_table(polynomial_function, a, b, n)
+    x, y = get_values(polynomial_function, a, b, n)
+    print_values_table(x, y)
     print_final_polynomial_table(polynomial_function, x, y, n, step)

@@ -2,7 +2,7 @@ import numpy as np
 from prettytable import PrettyTable
 import scipy.integrate as integrate
 
-from polynomial import print_values_table
+from polynomial import get_values, print_values_table
 
 
 # Вычислить интеграл по формулам:
@@ -80,7 +80,7 @@ def evaluate_number_of_intervals(function, a, b, x, precise_value, method_names,
         value = methods[i](function, x, h)
 
         while np.absolute(precise_value - value) > eps:
-            x, y = print_values_table(function, a, b, n)
+            x, y = get_values(function, a, b, n)
             n += 2
             h = (b - a) / n
             value = methods[i](function, x, h)
@@ -101,7 +101,8 @@ def main():
     second_derivative = lambda u: -np.sin(u)
     fourth_derivative = np.sin
     precise_value = integrate.quad(function, a, b)[0]
-    x, y = print_values_table(function, a, b, n)
+    x, y = get_values(function, a, b, n)
+    print_values_table(x, y)
 
     method_names = ['Левых прямоугольников', 'Правых прямоугольников', 'Средних прямоугольников', 'Трапеций', 'Симпсона']
     methods = [riemann_sum_left, riemann_sum_right, riemann_sum_midpoint, trapezoidal_rule, simpsons_rule]

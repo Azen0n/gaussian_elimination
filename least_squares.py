@@ -2,7 +2,7 @@ import numpy as np
 from prettytable import PrettyTable
 
 from data import polynomial_function
-from polynomial import print_values_table
+from polynomial import get_values, print_values_table
 from matrix_operations import gaussian
 
 
@@ -68,7 +68,8 @@ def main():
     b = 5
     n = 5
     h = (b - a) / n
-    x, y = print_values_table(polynomial_function, a, b, n)
+    x, y = get_values(polynomial_function, a, b, n)
+    print_values_table(x, y)
 
     m = 3
     coefficients = least_squares_coefficients(x, y, m)
