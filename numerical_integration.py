@@ -13,7 +13,7 @@ from polynomial import get_values, print_values_table
 
 def riemann_sum_left(function, x, h):
     """Вычисление интеграла по методу левых прямоугольников"""
-    return h * sum([function(x[i - 1]) for i in range(1, len(x))])
+    return sum([h * function(x[i - 1]) for i in range(1, len(x))])
 
 
 def riemann_sum_right(function, x, h):
@@ -33,7 +33,7 @@ def trapezoidal_rule(function, x, h):
 
 def simpsons_rule(function, x, h):
     """Вычисление интеграла по методу Симпсона"""
-    return h / 3 * sum([(2 + 2 * (i % 2)) * function(x[i]) for i in range(len(x))])
+    return h / 3 * (function(x[0]) + sum([(2 + 2 * (i % 2)) * function(x[i]) for i in range(1, len(x))]) + function(x[-1]))
 
 
 def riemann_sum_midpoint_error(second_derivative, xi, a, b, h):
@@ -75,14 +75,15 @@ def evaluate_number_of_intervals(function, a, b, x, precise_value, method_names,
     table = PrettyTable(header)
 
     for i in range(len(methods)):
-        n = 4
+        n = 2
         h = (b - a) / n
+        x, y = get_values(function, a, b, n)
         value = methods[i](function, x, h)
 
         while np.absolute(precise_value - value) > eps:
-            x, y = get_values(function, a, b, n)
             n += 2
             h = (b - a) / n
+            x, y = get_values(function, a, b, n)
             value = methods[i](function, x, h)
 
         table.add_row([method_names[i],
@@ -94,13 +95,13 @@ def evaluate_number_of_intervals(function, a, b, x, precise_value, method_names,
 
 def main():
     a = 0
-    b = 2 * np.pi
+    b = np.pi / 2
     n = 6
-    function = np.sin
-    first_derivative = np.cos
-    second_derivative = lambda u: -np.sin(u)
-    fourth_derivative = np.sin
-    precise_value = integrate.quad(function, a, b)[0]
+    function = lambda u: np.cos(u)
+    first_derivative = lambda u: -np.sin(u)
+    second_derivative = lambda u: -np.cos(u)
+    fourth_derivative = lambda u: np.cos(u)
+    precise_value = 1
     x, y = get_values(function, a, b, n)
     print_values_table(x, y)
 
@@ -110,9 +111,8 @@ def main():
     derivatives = [first_derivative, first_derivative, second_derivative, second_derivative, fourth_derivative]
 
     print_integration_methods(function, derivatives, a, b, n, x, precise_value, method_names, methods, errors)
+    evaluate_number_of_intervals(function, a, b, x, precise_value, method_names, methods, eps=10e-3)
     evaluate_number_of_intervals(function, a, b, x, precise_value, method_names, methods, eps=10e-5)
-    evaluate_number_of_intervals(function, a, b, x, precise_value, method_names, methods, eps=10e-6)
-    evaluate_number_of_intervals(function, a, b, x, precise_value, method_names, methods, eps=10e-7)
 
 
 if __name__ == '__main__':
