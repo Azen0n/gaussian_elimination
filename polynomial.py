@@ -8,7 +8,7 @@ from prettytable import PrettyTable
 def get_values(function, a, b, n):
     step = (b - a) / n
 
-    x = [np.round(a + i * step, 2) for i in range(n + 1)]
+    x = [a + i * step for i in range(n + 1)]
     y = [function(a + i * step) for i in range(n + 1)]
 
     return x, y
