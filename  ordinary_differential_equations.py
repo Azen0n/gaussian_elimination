@@ -24,6 +24,16 @@ def euler_cauchy(f, initial, x, a, b, n):
     return y
 
 
+def half_euler_cauchy(f, initial, x, a, b, n):
+    """Решение дифференциального уравнения y' = f(x, y), где y(0) = initial методом Эйлера–Коши на полуцелой сетке"""
+    h = (b - a) / n
+    y = np.zeros(len(x))
+    y[0] = initial
+    for i in range(len(x) - 1):
+        y[i + 1] = y[i] + h * f(x[i] + h / 2, y[i] + h / 2 * f(x[i], y[i]))
+    return y
+
+
 def runge_kutta(f, initial, x, a, b, n):
     """Решение дифференциального уравнения y' = f(x, y), где y(0) = initial методом Рунге–Кутты"""
     h = (b - a) / n
@@ -60,12 +70,11 @@ def main():
     n = 10
     initial = function(a)
     x, y = get_values(function, a, b, n)
-    x2, y2 = get_values(function, a, b, 2 * n)
     print_values_table(x, y)
 
     y1 = euler(function_prime, initial, x, a, b, n)
     y2 = euler_cauchy(function_prime, initial, x, a, b, n)
-    y3 = euler_cauchy(function_prime, initial, x2, a, b, 2 * n)[0::2]
+    y3 = half_euler_cauchy(function_prime, initial, x, a, b, n)
     y4 = runge_kutta(function_prime, initial, x, a, b, n)
 
     print_methods_table(x, y, y1, y2, y3, y4)
